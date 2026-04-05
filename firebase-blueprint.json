@@ -1,0 +1,84 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User preferences and goals",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "theme": { "type": "string", "enum": ["light", "dark"] },
+        "monthlyBudget": { "type": "number" },
+        "productivityGoal": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    },
+    "Task": {
+      "title": "Task",
+      "description": "Daily or one-time task",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "title": { "type": "string" },
+        "priority": { "type": "string", "enum": ["low", "medium", "high"] },
+        "recurrence": { "type": "string", "enum": ["none", "daily", "weekdays", "weekends", "custom"] },
+        "customDays": { "type": "array", "items": { "type": "number" } },
+        "completed": { "type": "boolean" },
+        "date": { "type": "string", "format": "date" },
+        "lastReset": { "type": "string", "format": "date" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "title", "priority", "recurrence", "completed"]
+    },
+    "Expense": {
+      "title": "Expense",
+      "description": "Daily spending record",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "amount": { "type": "number" },
+        "category": { "type": "string" },
+        "notes": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "amount", "category", "date"]
+    },
+    "Habit": {
+      "title": "Habit",
+      "description": "Long-term habit tracking",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "streak": { "type": "number" },
+        "lastCompleted": { "type": "string", "format": "date" },
+        "history": { "type": "array", "items": { "type": "string", "format": "date" } },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "name", "streak"]
+    },
+    "Note": {
+      "title": "Daily Note",
+      "description": "Journal entry for a specific day",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "content": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "content", "date"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": { "schema": "User", "description": "User profiles" },
+    "/users/{userId}/tasks/{taskId}": { "schema": "Task", "description": "User tasks" },
+    "/users/{userId}/expenses/{expenseId}": { "schema": "Expense", "description": "User expenses" },
+    "/users/{userId}/habits/{habitId}": { "schema": "Habit", "description": "User habits" },
+    "/users/{userId}/notes/{noteId}": { "schema": "Note", "description": "User journal entries" }
+  }
+}
