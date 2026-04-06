@@ -1,5 +1,6 @@
 export type Priority = 'low' | 'medium' | 'high';
 export type Recurrence = 'none' | 'daily' | 'weekdays' | 'weekends' | 'custom';
+export type HabitFrequency = 'daily' | 'specific_days' | 'every_n_days';
 
 export interface UserProfile {
   uid: string;
@@ -50,6 +51,9 @@ export interface Habit {
   streak: number;
   lastCompleted: string; // YYYY-MM-DD
   history: string[]; // dates
+  frequency: HabitFrequency; // how often
+  specificDays?: number[]; // 0=Sun,1=Mon,...6=Sat for 'specific_days'
+  intervalDays?: number; // e.g. 2 for every 2 days
   createdAt: any;
 }
 
