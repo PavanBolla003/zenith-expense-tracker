@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Layout } from './components/Layout';
 import { Dashboard } from './components/Dashboard';
-import { TaskTracker } from './components/TaskTracker';
 import { ExpenseTracker } from './components/ExpenseTracker';
 import { HabitTracker } from './components/HabitTracker';
 import { Journal } from './components/Journal';
@@ -12,7 +11,6 @@ export default function App() {
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard': return <Dashboard />;
-      case 'tasks': return <TaskTracker />;
       case 'expenses': return <ExpenseTracker />;
       case 'habits': return <HabitTracker />;
       case 'journal': return <Journal />;

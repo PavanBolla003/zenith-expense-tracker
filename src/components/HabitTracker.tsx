@@ -8,7 +8,7 @@ import { cn } from '../lib/utils';
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const DAY_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-function isDueToday(habit: Habit): boolean {
+export function isDueToday(habit: Habit): boolean {
   const today = new Date();
   const dayOfWeek = today.getDay();
 

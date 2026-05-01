@@ -29,7 +29,6 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'tasks', label: 'Tasks', icon: CheckSquare },
     { id: 'expenses', label: 'Expenses', icon: Wallet },
     { id: 'habits', label: 'Habits', icon: Flame },
     { id: 'journal', label: 'Journal', icon: Book },

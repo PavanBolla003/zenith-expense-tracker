@@ -1,6 +1,7 @@
-import React from 'react';
-import { Task, Expense } from '../types';
+import React, { useState } from 'react';
+import { Habit, Expense } from '../types';
 import { useLocalStorage } from '../lib/useLocalStorage';
+import { isDueToday } from './HabitTracker';
 import { 
   BarChart, 
   Bar, 
@@ -14,16 +15,18 @@ import {
   Pie
 } from 'recharts';
 import { format, subDays, startOfDay, endOfDay, parseISO } from 'date-fns';
-import { TrendingUp, CheckCircle, Wallet, Target } from 'lucide-react';
+import { TrendingUp, CheckCircle, Wallet, Target, Flame } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export const Dashboard: React.FC = () => {
-  const [tasks] = useLocalStorage<Task[]>('zenith_tasks', []);
+  const [habits] = useLocalStorage<Habit[]>('zenith_habits', []);
   const [expenses] = useLocalStorage<Expense[]>('zenith_expenses', []);
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
 
-  // Task completion rate
-  const completedTasks = tasks.filter(t => t.completed).length;
-  const completionRate = tasks.length > 0 ? (completedTasks / tasks.length) * 100 : 0;
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+  const dueHabits = habits.filter(isDueToday);
+  const completedHabitsToday = dueHabits.filter(h => h.lastCompleted === todayStr).length;
+  const completionRate = dueHabits.length > 0 ? (completedHabitsToday / dueHabits.length) * 100 : 0;
 
   // Expense by category
   const expenseByCategory = expenses.reduce((acc: any, curr) => {
@@ -42,16 +45,20 @@ export const Dashboard: React.FC = () => {
     return format(d, 'yyyy-MM-dd');
   }).reverse();
 
-  const barData = last7Days.map(date => ({
-    date: format(parseISO(date), 'MMM d'),
-    amount: expenses
-      .filter(e => e.date === date)
-      .reduce((sum, e) => sum + e.amount, 0)
-  }));
+  const barData = last7Days.map(date => {
+    const dailyExpenses = expenses.filter(e => 
+      e.date === date && 
+      (selectedCategory === 'All' || e.category === selectedCategory)
+    );
+    return {
+      date: format(parseISO(date), 'MMM d'),
+      amount: dailyExpenses.reduce((sum, e) => sum + e.amount, 0)
+    };
+  });
 
   const COLORS = ['#6366f1', '#a855f7', '#ec4899', '#f43f5e', '#f59e0b', '#10b981'];
 
-  const pendingTasks = tasks.filter(t => !t.completed).slice(0, 5); // show top 5
+  const pendingHabits = dueHabits.filter(h => h.lastCompleted !== todayStr).slice(0, 5); // show top 5
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -62,7 +69,7 @@ export const Dashboard: React.FC = () => {
               <CheckCircle size={24} />
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">Task Completion</p>
+              <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">Habit Completion</p>
               <h3 className="text-3xl font-black text-gray-900 dark:text-white">{completionRate.toFixed(0)}%</h3>
             </div>
           </div>
@@ -108,23 +115,19 @@ export const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-8 rounded-3xl shadow-sm border border-white/40 dark:border-gray-800">
           <h3 className="text-xl font-bold mb-6 text-gray-900 dark:text-white flex items-center gap-2">
-            <Target className="text-indigo-500" /> Pending Tasks
+            <Flame className="text-orange-500" /> Pending Habits
           </h3>
           <div className="space-y-3">
-            {pendingTasks.length === 0 ? (
+            {pendingHabits.length === 0 ? (
               <div className="text-center py-10 bg-gray-50/50 dark:bg-gray-800/50 rounded-2xl">
-                <p className="text-gray-500 font-medium">All caught up! No pending tasks.</p>
+                <p className="text-gray-500 font-medium">All caught up! No pending habits.</p>
               </div>
             ) : (
-              pendingTasks.map(task => (
-                <div key={task.id} className="flex items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
-                  <div className={cn(
-                    "w-3 h-3 rounded-full shadow-sm",
-                    task.priority === 'high' ? "bg-rose-500 shadow-rose-200" :
-                    task.priority === 'medium' ? "bg-amber-400 shadow-amber-200" : "bg-blue-500 shadow-blue-200"
-                  )} />
-                  <span className="text-base font-semibold text-gray-700 dark:text-gray-200 truncate flex-1">{task.title}</span>
-                  <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md">{task.priority}</span>
+              pendingHabits.map(habit => (
+                <div key={habit.id} className="flex items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="w-3 h-3 rounded-full shadow-sm bg-orange-500 shadow-orange-200" />
+                  <span className="text-base font-semibold text-gray-700 dark:text-gray-200 truncate flex-1">{habit.name}</span>
+                  <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md">🔥 {habit.streak}</span>
                 </div>
               ))
             )}
@@ -132,9 +135,21 @@ export const Dashboard: React.FC = () => {
         </div>
 
         <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-8 rounded-3xl shadow-sm border border-white/40 dark:border-gray-800">
-          <h3 className="text-xl font-bold mb-6 text-gray-900 dark:text-white flex items-center gap-2">
-            <TrendingUp className="text-purple-500" /> Weekly Spending
-          </h3>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <TrendingUp className="text-purple-500" /> Weekly Spending
+            </h3>
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="bg-gray-50 dark:bg-gray-800 border-none rounded-xl px-3 py-1.5 text-sm font-semibold outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer"
+            >
+              <option value="All">All Categories</option>
+              {Object.keys(expenseByCategory).map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+          </div>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={barData}>
